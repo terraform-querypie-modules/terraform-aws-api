@@ -10,6 +10,7 @@ locals {
   image_pull_secret_arn   = var.image_pull_secret_arn
   application_credentials = var.application_credentials
   image                   = var.image
+  log_group_name          = var.log_group_name
 }
 
 module "ecs" {
@@ -24,6 +25,7 @@ module "ecs" {
   image_pull_secret_arn   = local.image_pull_secret_arn
   application_credentials = local.application_credentials
   image                   = local.image
+  log_group_name          = local.log_group_name
 }
 
 module "ec2" {

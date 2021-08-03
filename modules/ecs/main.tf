@@ -14,9 +14,16 @@ locals {
   support_provider        = ["FARGATE"]
   application_credentials = var.application_credentials
   jdbc_driver_class_name  = var.jdbc_driver_class_name
-  log_mode                = "awslogs"
+  log_driver              = "awslogs"
+  application_name        = "apiserver"
+  log_group_name          = var.log_group_name
 }
-
+# get current region
+data "aws_region" "current" {}
+# get cluster_default_logging_group
+data "aws_cloudwatch_log_group" "this" {
+  name = local.log_group_name
+}
 resource "aws_ecs_task_definition" "this" {
   cpu                      = local.cpu
   memory                   = local.memory
@@ -28,7 +35,7 @@ resource "aws_ecs_task_definition" "this" {
   container_definitions = jsonencode(
     [
       {
-        name  = "apiserver"
+        name  = local.application_name
         image = local.image
         repositoryCredentials = {
           credentialsParameter = local.image_pull_secret_arn
@@ -53,25 +60,24 @@ resource "aws_ecs_task_definition" "this" {
             value = local.jdbc_driver_class_name
           },
         ]
-//        logConfiguration = {
-//          logDriver = local.log_mode
-//          options = {
-//            awslogs-group         = "/ecs",
-//            awslogs-region        = "ap-northeast-2",
-//            awslogs-stream-prefix = "apiserver"
-//          }
-//        }
+        logConfiguration = {
+          logDriver = local.log_driver
+          options = {
+            awslogs-group         = data.aws_cloudwatch_log_group.this.name
+            awslogs-region        = data.aws_region.current.name
+            awslogs-stream-prefix = local.application_name
+          }
+        }
       }
-
     ]
   )
-  family = "apiserver"
+  family = local.application_name
 }
 
 resource "aws_ecs_service" "this" {
   for_each = toset(local.subnet_ids)
 
-  name            = "apiserver-${trimprefix(each.key, "subnet-")}"
+  name            = format("%s-%s", "apiserver",trimprefix(each.key, "subnet-"))
   cluster         = local.cluster_id
   task_definition = aws_ecs_task_definition.this.arn
   desired_count   = 1

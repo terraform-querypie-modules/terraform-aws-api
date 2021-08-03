@@ -20,6 +20,12 @@ variable "jdbc_driver_class_name" {
   description = "querypie database driver which suppport MySQL, MariaDB"
 }
 
+variable "log_group_name" {
+  type = string
+  default = null
+  description = "logging group name"
+}
+
 variable "vpc_id" {
   default     = null
   description = "a deployed vpc id"

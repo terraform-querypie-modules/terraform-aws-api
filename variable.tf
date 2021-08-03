@@ -9,6 +9,12 @@ variable "vpc_id" {
   description = "a deployed vpc id"
 }
 
+variable "log_group_name" {
+  type        = string
+  default     = null
+  description = "logging group name"
+}
+
 variable "cluster_id" {
   default     = null
   description = "targeted ecs cluster id"
@@ -27,8 +33,8 @@ variable "security_group_ids" {
 }
 
 variable "jdbc_driver_class_name" {
-  type = string
-  default = "com.mysql.cj.jdbc.Driver"
+  type        = string
+  default     = "com.mysql.cj.jdbc.Driver"
   description = "querypie database driver which suppport MySQL, MariaDB"
 }
 
